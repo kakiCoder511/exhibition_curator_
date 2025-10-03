@@ -7,14 +7,11 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-export default function ArtworkCard({
-  artwork,
-  onAdd,
-}: {
-  artwork: ArtworkUnified;
-  onAdd: (addedArtwork: ArtworkUnified) => void;
-}) {
+export default function ArtworkCard({ artwork, onAdd, }: {
+    artwork: ArtworkUnified;
+    onAdd: (addedArtwork: ArtworkUnified) => void;
+})
+  {
   return (
     <Card className="flex flex-col">
       {/* artwork image */}

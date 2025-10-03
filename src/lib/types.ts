@@ -12,4 +12,7 @@ export type ArtworkUnified = {
   license?: string;
   classification?: string;
   category?: Category;
+  description?: string;
+  materials?: string;
+  dimensions?: string;
 };
