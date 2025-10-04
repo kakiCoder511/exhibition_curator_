@@ -5,27 +5,37 @@ import type { ArtworkSummary, ArtworkDetailData, Category } from "./types";
 // ------------------------------
 
 const AIC_ENDPOINT = "https://api.artic.edu/api/v1/artworks";
+// keep /search but only to retrieve IDs; images come from hydrate call
+const AIC_SEARCH_ENDPOINT = `${AIC_ENDPOINT}/search`; // used just to fetch matching IDs
 
 /**
- * Build AIC query URL
- * Example:
- * https://api.artic.edu/api/v1/artworks?query=cat&fields=id,title,image_id
+ * Build the "search for IDs" URL (step 1).
+ * Example: https://api.artic.edu/api/v1/artworks/search?q=cat&limit=24&fields=id
  */
-function buildAICUrl(query: string, fields: string[]) {
-  const fieldString = fields.join(",");
-  return `${AIC_ENDPOINT}?query=${encodeURIComponent(query)}&fields=${fieldString}`;
+function buildAICSearchIdsUrl(query: string, limit = 24) {
+  const q = query.trim(); // defensively trim
+  // only request 'id' here (faster, smaller)
+  return `${AIC_SEARCH_ENDPOINT}?q=${encodeURIComponent(q)}&limit=${limit}&fields=id`;
 }
 
 /**
- * Construct IIIF image URL from image_id
+ * Build the "hydrate by IDs" URL (step 2).
+ * Example: https://api.artic.edu/api/v1/artworks?ids=1,2,3&fields=id,title,image_id,...
  */
+function buildAICHydrateUrl(ids: string[], fields: string[]) {
+  const fieldString = fields.join(",");
+  return `${AIC_ENDPOINT}?ids=${ids.join(",")}&fields=${fieldString}`;
+}
+
+// Construct IIIF image URL from image_id.
+
 const AIC_IMAGE = (imageId?: string) =>
   imageId
     ? `https://www.artic.edu/iiif/2/${imageId}/full/843,/0/default.jpg`
     : undefined;
 
 /**
- * Map AIC classification_title to our Category type
+ * Map AIC classification_title to our Category type.
  */
 const mapClassificationToCategory = (c?: string): Category | undefined => {
   if (!c) return undefined;
@@ -41,35 +51,56 @@ const mapClassificationToCategory = (c?: string): Category | undefined => {
 // ------------------------------
 
 /**
- * 🔎 Search Artworks (Summary)
- * Returns a simplified list of artworks for the search grid.
+ * 🔎 Search Artworks (Summary) — 2-step:
+ *   1) search for matching IDs
+ *   2) hydrate those IDs to get image_id and other fields
  */
 export async function searchAIC(q: string): Promise<ArtworkSummary[]> {
-  const url = buildAICUrl(q, [
-    "id",
-    "title",
-    "artist_title",
-    "date_display",
-    "image_id",
-    "thumbnail",
-    "classification_title",
-  ]);
-
+  // STEP 1: search for IDs only
+  const idsUrl = buildAICSearchIdsUrl(q); //  use minimal /search for IDs
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`AIC search failed: HTTP ${res.status} ${res.statusText}`);
+    const idsRes = await fetch(idsUrl, {
+      next: { revalidate: 60 }, //  light caching (optional)
+    } as RequestInit);
+    if (!idsRes.ok) throw new Error(`AIC search IDs failed: HTTP ${idsRes.status} ${idsRes.statusText}`);
+
+    const idsJson = await idsRes.json();
+    const idList: string[] = Array.isArray(idsJson?.data)
+      ? idsJson.data.map((d: any) => String(d.id)).filter(Boolean)
+      : [];
+
+    if (idList.length === 0) return []; // nothing matched
+
+    // STEP 2: hydrate details (including image_id)
+    const hydrateUrl = buildAICHydrateUrl(idList, [
+      "id",
+      "title",
+      "artist_title",
+      "date_display",
+      "image_id",
+      "thumbnail",
+      "classification_title",
+    ]); // ask for image_id here
+
+    const res = await fetch(hydrateUrl, {
+      next: { revalidate: 60 }, // light caching (optional)
+    } as RequestInit);
+    if (!res.ok) throw new Error(`AIC hydrate failed: HTTP ${res.status} ${res.statusText}`);
 
     const json = await res.json();
-    if (!json?.data) throw new Error("AIC search: Unexpected API response structure");
+    if (!json?.data || !Array.isArray(json.data)) {
+      throw new Error("AIC hydrate: Unexpected API response structure");
+    }
 
-    return (json.data ?? []).map((d: any): ArtworkSummary => ({
+    return json.data.map((d: any): ArtworkSummary => ({
       provider: "aic",
       id: String(d.id),
       title: d.title ?? "Untitled",
       artist: d.artist_title ?? undefined,
       date: d.date_display ?? undefined,
       image: AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png",
-      url: d.id ? `${AIC_ENDPOINT}/${d.id}` : undefined,
+      //  link to public artwork page
+      url: d.id ? `https://www.artic.edu/artworks/${d.id}` : undefined,
       category: mapClassificationToCategory(d.classification_title),
     }));
   } catch (err) {
@@ -101,11 +132,13 @@ export async function getAICDetail(id: string): Promise<ArtworkDetailData> {
   const url = `${AIC_ENDPOINT}/${encodeURIComponent(id)}?fields=${fields}`;
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      next: { revalidate: 300 }, //  light caching (optional)
+    } as RequestInit);
     if (!res.ok) throw new Error(`AIC detail fetch failed: HTTP ${res.status} ${res.statusText}`);
 
     const json = await res.json();
-    const d = json.data ?? {};
+    const d = json?.data ?? {};
 
     const image = AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png";
 
@@ -116,7 +149,8 @@ export async function getAICDetail(id: string): Promise<ArtworkDetailData> {
       artist: d.artist_title ?? undefined,
       date: d.date_display ?? undefined,
       image,
-      url: d.id ? `${AIC_ENDPOINT}/${d.id}` : undefined,
+      //  link to public artwork page
+      url: d.id ? `https://www.artic.edu/artworks/${d.id}` : undefined,
       category: mapClassificationToCategory(d.classification_title),
 
       description: d.short_description ?? d.description ?? undefined,
