@@ -1,4 +1,4 @@
-export type ProviderKey = "aic " | "met" | "vam";
+export type ProviderKey = "aic" | "met" | "vam";
 export type Category = "painting" | "photography" | "decorative";
 
 // export type ArtworkUnified = {

@@ -1,7 +1,7 @@
 //ArtworkSummary , used for search result grid
 "use client";
 
-import { ArtworkUnified } from "@/lib/types";
+import { ArtworkSummary } from "@/lib/types";
 import {
   Card,
   CardHeader,
@@ -10,8 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function ArtworkCard({ artwork, onAdd, }: {
-    artwork: ArtworkUnified;
-    onAdd: (addedArtwork: ArtworkUnified) => void;
+    artwork: ArtworkSummary;
+    onAdd: (addedArtwork: ArtworkSummary) => void;
 })
   {
   return (
