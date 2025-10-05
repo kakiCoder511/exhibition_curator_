@@ -5,12 +5,14 @@ import { searchAIC } from "@/lib/aic";
 import SearchBar from "@/components/SearchBar";
 import ResultGrid from "@/components/ResultGrid";
 import MiniExhibitionCart from "@/components/MiniExhibitionCart";
+import { useExhibitionStore } from "@/store/exhibition";
 
 export default function Home() {
   const [results, setResults] = useState<ArtworkSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [cartItems, setCartItems] = useState<ArtworkSummary[]>([]);
+
+  const { items: cartItems, addItem, removeItem, clear } = useExhibitionStore();
 
   async function handleSearch(query: string) {
     setLoading(true);
@@ -26,23 +28,16 @@ export default function Home() {
   }
 
   function handleAdd(a: ArtworkSummary) {
-    setCartItems((prev) => {
-      if (prev.some((item) => item.id === a.id && item.provider === a.provider)) {
-        return prev;
-      }
-      return [...prev, a];
-    });
+    addItem(a);
   }
 
   function handleRemove(a: ArtworkSummary) {
-    setCartItems((prev) =>
-      prev.filter((item) => !(item.id === a.id && item.provider === a.provider))
-    );
+    removeItem(a.id);
   }
 
   function handleClear() {
     if (cartItems.length === 0) return;
-    setCartItems([]);
+    clear();
   }
 
   return (
@@ -51,11 +46,12 @@ export default function Home() {
         <h1 className="text-2xl font-bold">Exhibition Curator</h1>
         <p className="text-sm text-gray-600">Search & curate artworks</p>
       </header>
-
       <SearchBar onSearch={handleSearch} />
+
+
       <main className="max-w-5xl mx-auto space-y-6">
-        <ResultGrid artworks={results} onAdd={handleAdd} loading={loading} error={error} />
         <MiniExhibitionCart items={cartItems} onRemove={handleRemove} onClear={handleClear} />
+        <ResultGrid artworks={results} onAdd={handleAdd} loading={loading} error={error} />
       </main>
     </div>
   );
