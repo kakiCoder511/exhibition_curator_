@@ -16,13 +16,22 @@ import { useExhibitionStore } from "@/store/exhibition";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 
 export default function CreateExhibitionPage() {
   const router = useRouter();
   const {
-    title, curator, notes, items,
-    setTitle, setCurator, setNotes,
-    removeItem, clear, moveItem, sortItems
+    title,
+    curator,
+    notes,
+    items,
+    setTitle,
+    setCurator,
+    setNotes,
+    removeItem,
+    clear,
+    moveItem,
+    sortItems,
   } = useExhibitionStore();
   const [sortValue, setSortValue] = useState("");
 
@@ -34,36 +43,42 @@ export default function CreateExhibitionPage() {
     // - Clear the working store so the next exhibition starts empty
     // - Navigate to your desired page (currently the home page)
     const key = "exhibition-snapshots";
+    const id = Date.now().toString(36);
     const snapshot = {
+      id,
       title: title.trim(),
       curator: curator.trim(),
       notes: notes.trim(),
       items,
       savedAt: new Date().toISOString(),
     };
-    const prev = typeof window !== "undefined" ? localStorage.getItem(key) : null;
+    const prev =
+      typeof window !== "undefined" ? localStorage.getItem(key) : null;
     const list = prev ? JSON.parse(prev) : [];
     list.unshift(snapshot);
     localStorage.setItem(key, JSON.stringify(list));
 
-    clear();            // 重置工作區
-    router.push("/");   // Go back to home (change to /exhibitions if you have a listing page)
+    clear();
+    router.push(`/exhibition/view/${id}`); // Go to the exhibit view page we just created
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 p-6">
       <div className="max-w-5xl mx-auto space-y-6">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between px-4 py-2">
           <div>
-            <h1 className="text-2xl font-bold">Create Exhibition</h1>
+            <h1 className="text-2xl font-bold">
+              <Link href="/" className="hover:underline">
+                Create Exhibition
+              </Link>
+            </h1>
             <p className="text-sm text-muted-foreground">
               Name your exhibition and review selected artworks.
             </p>
           </div>
           <div className="space-x-2">
-            <Button variant="secondary" onClick={() => router.back()}>Back</Button>
             <Button disabled={!canSave} onClick={handleSave}>
-              Save Exhibition
+              Curate & Save
             </Button>
           </div>
         </header>
@@ -108,26 +123,70 @@ export default function CreateExhibitionPage() {
         <section>
           <Card className="bg-white dark:bg-zinc-900">
             <CardHeader className="flex items-center justify-between gap-3">
-              <CardTitle className="text-lg">Selected Artworks ({items.length})</CardTitle>
+              <CardTitle className="text-lg">
+                Selected Artworks ({items.length})
+              </CardTitle>
               <div className="flex items-center gap-2">
-                <select
-                  className="h-8 px-2 py-1 rounded-md border text-sm bg-background"
-                  value={sortValue}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setSortValue(v);
-                    const [by, dir] = v.split(":") as ["title"|"artist"|"date", "asc"|"desc"];
-                    if (by && dir) sortItems(by, dir);
-                  }}
-                >
-                  <option value="">Sort...</option>
-                  <option value="title:asc">Title A–Z</option>
-                  <option value="title:desc">Title Z–A</option>
-                  <option value="artist:asc">Artist A–Z</option>
-                  <option value="artist:desc">Artist Z–A</option>
-                  <option value="date:asc">Date Asc</option>
-                  <option value="date:desc">Date Desc</option>
-                </select>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">Sort</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                      <DialogTitle>Sort selected artworks</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-2">
+                      <DialogClose asChild>
+                        <Button
+                        variant={sortValue === "title:asc" ? "default" : "outline"}
+                        onClick={() => { setSortValue("title:asc"); sortItems("title","asc"); }}
+                        >
+                          Title A–Z
+                        </Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <Button
+                        variant={sortValue === "title:desc" ? "default" : "outline"}
+                        onClick={() => { setSortValue("title:desc"); sortItems("title","desc"); }}
+                        >
+                          Title Z–A
+                        </Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <Button
+                        variant={sortValue === "artist:asc" ? "default" : "outline"}
+                        onClick={() => { setSortValue("artist:asc"); sortItems("artist","asc"); }}
+                        >
+                          Artist A–Z
+                        </Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <Button
+                        variant={sortValue === "artist:desc" ? "default" : "outline"}
+                        onClick={() => { setSortValue("artist:desc"); sortItems("artist","desc"); }}
+                        >
+                          Artist Z–A
+                        </Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <Button
+                        variant={sortValue === "date:asc" ? "default" : "outline"}
+                        onClick={() => { setSortValue("date:asc"); sortItems("date","asc"); }}
+                        >
+                          Date Asc
+                        </Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <Button
+                        variant={sortValue === "date:desc" ? "default" : "outline"}
+                        onClick={() => { setSortValue("date:desc"); sortItems("date","desc"); }}
+                        >
+                          Date Desc
+                        </Button>
+                      </DialogClose>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Button asChild variant="outline" size="sm">
                   <Link href="/">Add more</Link>
                 </Button>
@@ -146,17 +205,24 @@ export default function CreateExhibitionPage() {
                         src={a.image ?? "/placeholder.png"}
                         alt={a.title ?? "Artwork"}
                         className="w-full h-full object-cover"
-                        onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/placeholder.png")}
+                        onError={(e) =>
+                          ((e.currentTarget as HTMLImageElement).src =
+                            "/placeholder.png")
+                        }
                       />
                     </div>
                     <div className="text-sm">
-                      <div className="font-medium truncate">{a.title ?? "Untitled"}</div>
-                      <div className="text-xs text-muted-foreground truncate">{a.artist ?? "Unknown"}</div>
+                      <div className="font-medium truncate">
+                        {a.title ?? "Untitled"}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {a.artist ?? "Unknown"}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap w-full">
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-sm"
                         onClick={() => moveItem(a.id, "up")}
                         aria-label="Move up"
                       >
@@ -164,7 +230,7 @@ export default function CreateExhibitionPage() {
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-sm"
                         onClick={() => moveItem(a.id, "down")}
                         aria-label="Move down"
                       >
@@ -173,6 +239,7 @@ export default function CreateExhibitionPage() {
                       <Button
                         variant="destructive"
                         size="sm"
+                        className="w-full sm:w-auto"
                         // Currently removes by `id` only. If your providers can
                         // share the same `id`, update the store to remove by
                         // compound key (id + provider) and call it here instead.

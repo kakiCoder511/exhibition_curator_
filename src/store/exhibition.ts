@@ -7,6 +7,7 @@ type ExhibitionState = {
   curator: string;
   notes: string;
   items: ArtworkSummary[];
+  setAll: (s: { title: string; curator: string; notes: string; items: ArtworkSummary[] }) => void;
   setTitle: (v: string) => void;
   setCurator: (v: string) => void;
   setNotes: (v: string) => void;
@@ -27,6 +28,7 @@ export const useExhibitionStore = create<ExhibitionState>()(
       curator: "",
       notes: "",
       items: [],
+      setAll: ({ title, curator, notes, items }) => set({ title, curator, notes, items }),
       setTitle: (v) => set({ title: v }),
       setCurator: (v) => set({ curator: v }),
       setNotes: (v) => set({ notes: v }),
