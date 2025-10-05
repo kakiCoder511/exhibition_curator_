@@ -15,7 +15,9 @@ const AIC_SEARCH_ENDPOINT = `${AIC_ENDPOINT}/search`; // used just to fetch matc
 function buildAICSearchIdsUrl(query: string, limit = 24) {
   const q = query.trim(); // defensively trim
   // only request 'id' here (faster, smaller)
-  return `${AIC_SEARCH_ENDPOINT}?q=${encodeURIComponent(q)}&limit=${limit}&fields=id`;
+  return `${AIC_SEARCH_ENDPOINT}?q=${encodeURIComponent(
+    q
+  )}&limit=${limit}&fields=id`;
 }
 
 /**
@@ -62,7 +64,10 @@ export async function searchAIC(q: string): Promise<ArtworkSummary[]> {
     const idsRes = await fetch(idsUrl, {
       next: { revalidate: 60 }, //  light caching (optional)
     } as RequestInit);
-    if (!idsRes.ok) throw new Error(`AIC search IDs failed: HTTP ${idsRes.status} ${idsRes.statusText}`);
+    if (!idsRes.ok)
+      throw new Error(
+        `AIC search IDs failed: HTTP ${idsRes.status} ${idsRes.statusText}`
+      );
 
     const idsJson = await idsRes.json();
     const idList: string[] = Array.isArray(idsJson?.data)
@@ -79,30 +84,36 @@ export async function searchAIC(q: string): Promise<ArtworkSummary[]> {
       "date_display",
       "image_id",
       "thumbnail",
+      "has_image",
       "classification_title",
     ]); // ask for image_id here
 
     const res = await fetch(hydrateUrl, {
       next: { revalidate: 60 }, // light caching (optional)
     } as RequestInit);
-    if (!res.ok) throw new Error(`AIC hydrate failed: HTTP ${res.status} ${res.statusText}`);
+    if (!res.ok)
+      throw new Error(
+        `AIC hydrate failed: HTTP ${res.status} ${res.statusText}`
+      );
 
     const json = await res.json();
     if (!json?.data || !Array.isArray(json.data)) {
       throw new Error("AIC hydrate: Unexpected API response structure");
     }
 
-    return json.data.map((d: any): ArtworkSummary => ({
-      provider: "aic",
-      id: String(d.id),
-      title: d.title ?? "Untitled",
-      artist: d.artist_title ?? undefined,
-      date: d.date_display ?? undefined,
-      image: AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png",
-      //  link to public artwork page
-      url: d.id ? `https://www.artic.edu/artworks/${d.id}` : undefined,
-      category: mapClassificationToCategory(d.classification_title),
-    }));
+    return json.data.map(
+      (d: any): ArtworkSummary => ({
+        provider: "aic",
+        id: String(d.id),
+        title: d.title ?? "Untitled",
+        artist: d.artist_title ?? undefined,
+        date: d.date_display ?? undefined,
+        image: AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png",
+        //  link to public artwork page
+        url: d.id ? `https://www.artic.edu/artworks/${d.id}` : undefined,
+        category: mapClassificationToCategory(d.classification_title),
+      })
+    );
   } catch (err) {
     console.error("❌ Error in searchAIC:", err);
     throw err;
@@ -135,12 +146,16 @@ export async function getAICDetail(id: string): Promise<ArtworkDetailData> {
     const res = await fetch(url, {
       next: { revalidate: 300 }, //  light caching (optional)
     } as RequestInit);
-    if (!res.ok) throw new Error(`AIC detail fetch failed: HTTP ${res.status} ${res.statusText}`);
+    if (!res.ok)
+      throw new Error(
+        `AIC detail fetch failed: HTTP ${res.status} ${res.statusText}`
+      );
 
     const json = await res.json();
     const d = json?.data ?? {};
 
-    const image = AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png";
+    const image =
+      AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png";
 
     return {
       provider: "aic",

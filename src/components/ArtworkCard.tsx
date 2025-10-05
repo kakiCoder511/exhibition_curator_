@@ -21,13 +21,19 @@ export default function ArtworkCard({
         />
       </div>
       <CardHeader className="p-3">
-        <h3 className="text-sm font-semibold line-clamp-2">{artwork.title ?? "Untitled"}</h3>
-        <p className="text-xs text-gray-600">{artwork.artist ?? "Unknown Artist"}</p>
+        <h3 className="text-sm font-semibold line-clamp-2">
+          {artwork.title ?? "Untitled"}
+        </h3>
+        <p className="text-xs text-gray-600">
+          {artwork.artist ?? "Unknown Artist"}
+        </p>
         <p className="text-xs text-gray-500">{artwork.date}</p>
       </CardHeader>
       <CardContent className="p-3 pt-0">
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => onAdd(artwork)}>Add</Button>
+          <Button size="sm" onClick={() => onAdd(artwork)}>
+            Add
+          </Button>
           {artwork.url && (
             <a
               href={artwork.url}
