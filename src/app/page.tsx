@@ -8,6 +8,7 @@ import SearchBar from "@/components/SearchBar";
 import ResultGrid from "@/components/ResultGrid";
 import MiniExhibitionCart from "@/components/MiniExhibitionCart";
 import { useExhibitionStore } from "@/store/exhibition";
+import Link from "next/link";
 
 export default function Home() {
   const [results, setResults] = useState<ArtworkSummary[]>([]);
@@ -49,15 +50,27 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <header className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold">Exhibition Curator</h1>
+        <h1 className="text-2xl font-bold">
+          <Link href="/" className="hover:underline">
+            Exhibition Curator
+          </Link>
+        </h1>{" "}
         <p className="text-sm text-gray-600">Search & curate artworks</p>
       </header>
       <SearchBar onSearch={handleSearch} />
 
-
       <main className="max-w-5xl mx-auto space-y-6">
-        <MiniExhibitionCart items={cartItems} onRemove={handleRemove} onClear={handleClear} />
-        <ResultGrid artworks={results} onAdd={handleAdd} loading={loading} error={error} />
+        <MiniExhibitionCart
+          items={cartItems}
+          onRemove={handleRemove}
+          onClear={handleClear}
+        />
+        <ResultGrid
+          artworks={results}
+          onAdd={handleAdd}
+          loading={loading}
+          error={error}
+        />
       </main>
     </div>
   );

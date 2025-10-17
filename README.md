@@ -72,6 +72,4 @@ public/         # Static assets and placeholders
 
 ## 🖼️ About the Project
 
-This project was developed for the **Skills Bootcamp: Software Developer / Coding Skills Graduates – Software Engineering** module.
-
 > The app empowers art lovers, students, and researchers to explore and curate their own virtual exhibitions from open museum APIs — combining art, code, and curation into one interactive experience.
