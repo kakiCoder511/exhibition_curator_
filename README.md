@@ -61,15 +61,19 @@ public/         # Static assets and placeholders
 
 ---
 
-##  Notes
+## 🚧 To-Do / Planned Improvements (Updated)
 
-- Exhibition snapshots are stored in **browser localStorage**  
-- API clients include **fallbacks** for failed requests and missing images  
-- Designed with **responsive layout** and **accessibility** in mind  
-- Hosted using a **free tier platform** (e.g. Vercel)
+### 🖼️ User Experience
+- ✅ Implemented **sort / filter options** (by artist, museum, date)
+- ✅Add **artwork detail modal** with extended info & external museum link
+- ✅Allow users to **rename exhibitions** or add short descriptions
+- ✅Enhance **responsive layout** for mobile view
 
----
+### 💾 Data & Persistence
+- Extend beyond localStorage — add **backend (MongoDB/Firebase)** for permanent exhibition saving
+- Generate **shareable exhibition URLs**
+- (Optional) Add **user login / profile** for saved exhibitions
 
-## 🖼️ About the Project
-
-> The app empowers art lovers, students, and researchers to explore and curate their own virtual exhibitions from open museum APIs — combining art, code, and curation into one interactive experience.
+### ⚙️ Technical Enhancements
+- ✅ Added **loading skeletons & error handling**
+- Add **unit tests** for store logic & API clients
