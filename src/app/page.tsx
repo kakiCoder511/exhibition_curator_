@@ -9,6 +9,8 @@ import ResultGrid from "@/components/ResultGrid";
 import MiniExhibitionCart from "@/components/MiniExhibitionCart";
 import { useExhibitionStore } from "@/store/exhibition";
 import Link from "next/link";
+import { ArrowUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [results, setResults] = useState<ArtworkSummary[]>([]);
@@ -77,6 +79,16 @@ export default function Home() {
           error={error}
         />
       </main>
+      <Button
+        type="button"
+        size="lg"
+        className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg px-5 flex items-center gap-2"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="Back to top"
+      >
+        <ArrowUp className="size-4" />
+        To top
+      </Button>
     </div>
   );
 }
