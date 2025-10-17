@@ -69,12 +69,12 @@ export default function MiniExhibitionCart({
                   {/* Thumbnail */}
                   <div className="w-12 h-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-800">
                     <img
-                      src={item.image ?? "/placeholder.png"}
+                      src={item.image ?? "/placeholder.svg"}
                       alt={item.title ?? "Artwork thumbnail"}
                       className="w-full h-full object-cover"
                       onError={(e) =>
                         ((e.currentTarget as HTMLImageElement).src =
-                          "/placeholder.png")
+                          "/placeholder.svg")
                       }
                     />
                   </div>

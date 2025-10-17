@@ -108,7 +108,7 @@ export async function searchAIC(q: string): Promise<ArtworkSummary[]> {
         title: d.title ?? "Untitled",
         artist: d.artist_title ?? undefined,
         date: d.date_display ?? undefined,
-        image: AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png",
+        image: AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.svg",
         //  link to public artwork page
         url: d.id ? `https://www.artic.edu/artworks/${d.id}` : undefined,
         category: mapClassificationToCategory(d.classification_title),
@@ -155,7 +155,7 @@ export async function getAICDetail(id: string): Promise<ArtworkDetailData> {
     const d = json?.data ?? {};
 
     const image =
-      AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.png";
+      AIC_IMAGE(d.image_id) ?? d.thumbnail?.lqip ?? "/placeholder.svg";
 
     return {
       provider: "aic",

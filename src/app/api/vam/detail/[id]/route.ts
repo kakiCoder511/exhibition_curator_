@@ -1,0 +1,15 @@
+import { NextResponse } from "next/server";
+import { getVAMDetail } from "@/lib/vam";
+
+export async function GET(_req: Request, context: { params: { id: string } }) {
+  const id = context.params?.id;
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  try {
+    const data = await getVAMDetail(id);
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error("VAM detail proxy error", err);
+    return NextResponse.json({ error: "VAM detail failed" }, { status: 500 });
+  }
+}
+

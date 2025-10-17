@@ -2,6 +2,8 @@
 import { useState } from "react";
 import type { ArtworkSummary } from "@/lib/types";
 import { searchAIC } from "@/lib/aic";
+import { searchVAM } from "@/lib/vam";
+import { searchMet } from "@/lib/met";
 import SearchBar from "@/components/SearchBar";
 import ResultGrid from "@/components/ResultGrid";
 import MiniExhibitionCart from "@/components/MiniExhibitionCart";
@@ -18,8 +20,12 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      const data = await searchAIC(query); 
-      setResults(data);
+      const [aic, vam, met] = await Promise.all([
+        searchAIC(query),
+        searchVAM(query).catch(() => [] as ArtworkSummary[]),
+        searchMet(query).catch(() => [] as ArtworkSummary[]),
+      ]);
+      setResults([...aic, ...vam, ...met]);
     } catch {
       setError("Failed to fetch artworks.");
     } finally {

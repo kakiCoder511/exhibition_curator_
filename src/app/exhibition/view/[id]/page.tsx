@@ -6,8 +6,11 @@ import type { ArtworkSummary } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getAICDetail } from "@/lib/aic";
+import { getMetDetail } from "@/lib/met";
+import { getVAMDetail } from "@/lib/vam";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useExhibitionStore } from "@/store/exhibition";
+import { providerMeta } from "@/lib/utils";
 
 type Snapshot = {
   id: string;
@@ -56,6 +59,12 @@ export default function ExhibitionViewPage() {
       if (a.provider === "aic") {
         const d = await getAICDetail(a.id);
         setDescMap((m) => ({ ...m, [key]: d.description }));
+      } else if (a.provider === "met") {
+        const d = await getMetDetail(a.id);
+        setDescMap((m) => ({ ...m, [key]: d.description }));
+      } else if (a.provider === "vam") {
+        const d = await getVAMDetail(a.id);
+        setDescMap((m) => ({ ...m, [key]: d.description }));
       } else {
         setDescMap((m) => ({ ...m, [key]: undefined }));
       }
@@ -89,6 +98,7 @@ export default function ExhibitionViewPage() {
             src={heroImage}
             alt={snapshot.title}
             className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/placeholder.svg")}
           />
         ) : (
           <div className="absolute inset-0 bg-zinc-900" />
@@ -119,19 +129,19 @@ export default function ExhibitionViewPage() {
           const desc = descMap[key];
           return (
             <section key={key} className="w-full snap-start">
-              {/* Image area: consistent spacing, no crop */}
-              <div className="relative w-full bg-black flex items-center justify-center py-2 md:py-4 min-h-[60vh] md:min-h-[70vh]">
+              {/* Image area: consistent spacing, image bottom aligns to card */}
+              <div className="relative w-full bg-black flex items-end justify-center pt-2 md:pt-4 pb-2 md:pb-3 min-h-[60vh] md:min-h-[70vh]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={a.image ?? "/placeholder.png"}
+                  src={a.image ?? "/placeholder.svg"}
                   alt={a.title ?? "Artwork"}
                   className="max-h-[70vh] md:max-h-[80vh] w-auto max-w-full object-contain"
-                  onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/placeholder.png")}
+                  onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/placeholder.svg")}
                 />
               </div>
 
               {/* Separate info card below the artwork (not overlayed) */}
-              <div className="pt-2 pb-4 px-2 md:px-6 bg-black">
+              <div className="pb-4 px-2 md:px-6 bg-black">
                 <div className="mx-auto max-w-4xl bg-white text-black rounded-lg p-3 md:p-4 shadow border border-black/10">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -176,6 +186,26 @@ export default function ExhibitionViewPage() {
                       )}
                     </div>
                   )}
+                  <div className="mt-3 text-xs text-black/60 flex items-center gap-2">
+                    <span>
+                      Source: {providerMeta(a.provider).name}
+                    </span>
+                    {a.url && (
+                      <a href={a.url} target="_blank" rel="noreferrer" className="underline">
+                        Item
+                      </a>
+                    )}
+                    {providerMeta(a.provider).termsUrl && (
+                      <a
+                        href={providerMeta(a.provider).termsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline"
+                      >
+                        Terms
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </section>

@@ -16,6 +16,7 @@ import { useExhibitionStore } from "@/store/exhibition";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { providerMeta } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 
 export default function CreateExhibitionPage() {
@@ -202,12 +203,12 @@ export default function CreateExhibitionPage() {
                   <div key={`${a.provider}:${a.id}`} className="space-y-2">
                     <div className="aspect-[4/3] bg-gray-100 dark:bg-zinc-800 rounded overflow-hidden">
                       <img
-                        src={a.image ?? "/placeholder.png"}
+                        src={a.image ?? "/placeholder.svg"}
                         alt={a.title ?? "Artwork"}
                         className="w-full h-full object-cover"
                         onError={(e) =>
                           ((e.currentTarget as HTMLImageElement).src =
-                            "/placeholder.png")
+                            "/placeholder.svg")
                         }
                       />
                     </div>
@@ -217,6 +218,9 @@ export default function CreateExhibitionPage() {
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
                         {a.artist ?? "Unknown"}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                        Source: {providerMeta(a.provider).name}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap w-full">
