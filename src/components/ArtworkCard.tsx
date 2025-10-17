@@ -14,6 +14,7 @@ export default function ArtworkCard({
   return (
     <Card className="flex flex-col">
       <div className="aspect-[4/3] bg-gray-100">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={artwork.image ?? "/placeholder.svg"}
           alt={artwork.title ?? "Untitled"}

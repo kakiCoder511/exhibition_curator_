@@ -202,6 +202,7 @@ export default function CreateExhibitionPage() {
                 artworks.map((a) => (
                   <div key={`${a.provider}:${a.id}`} className="space-y-2">
                     <div className="aspect-[4/3] bg-gray-100 dark:bg-zinc-800 rounded overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={a.image ?? "/placeholder.svg"}
                         alt={a.title ?? "Artwork"}

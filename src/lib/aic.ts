@@ -69,9 +69,16 @@ export async function searchAIC(q: string): Promise<ArtworkSummary[]> {
         `AIC search IDs failed: HTTP ${idsRes.status} ${idsRes.statusText}`
       );
 
-    const idsJson = await idsRes.json();
+    const idsJson = (await idsRes.json()) as {
+      data?: Array<{ id?: number | string | null | undefined }>;
+    };
     const idList: string[] = Array.isArray(idsJson?.data)
-      ? idsJson.data.map((d: any) => String(d.id)).filter(Boolean)
+      ? idsJson.data
+          .map((d) => d?.id)
+          .filter(
+            (id): id is number | string => id !== null && id !== undefined
+          )
+          .map((id) => String(id))
       : [];
 
     if (idList.length === 0) return []; // nothing matched
@@ -96,13 +103,15 @@ export async function searchAIC(q: string): Promise<ArtworkSummary[]> {
         `AIC hydrate failed: HTTP ${res.status} ${res.statusText}`
       );
 
-    const json = await res.json();
+    const json = (await res.json()) as {
+      data?: AICHydrateRecord[];
+    };
     if (!json?.data || !Array.isArray(json.data)) {
       throw new Error("AIC hydrate: Unexpected API response structure");
     }
 
     return json.data.map(
-      (d: any): ArtworkSummary => ({
+      (d): ArtworkSummary => ({
         provider: "aic",
         id: String(d.id),
         title: d.title ?? "Untitled",
@@ -119,6 +128,16 @@ export async function searchAIC(q: string): Promise<ArtworkSummary[]> {
     throw err;
   }
 }
+
+type AICHydrateRecord = {
+  id: number | string;
+  title?: string | null;
+  artist_title?: string | null;
+  date_display?: string | null;
+  image_id?: string | null;
+  thumbnail?: { lqip?: string | null } | null;
+  classification_title?: string | null;
+};
 
 /**
  * 🖼️ Get Artwork Detail (by ID)

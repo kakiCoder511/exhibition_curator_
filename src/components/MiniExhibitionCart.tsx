@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import type { ArtworkSummary } from "@/lib/types";
 import Link from "next/link";
@@ -42,15 +43,15 @@ export default function MiniExhibitionCart({
           )}
         </CardTitle>
 
-          {/* <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClear}
-            disabled={!hasArtworks}
-          >
-            Clear
-          </Button> */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onClear}
+          disabled={!hasArtworks}
+        >
+          Clear
+        </Button>
       </CardHeader>
 
       {/* ---------- Content ---------- */}

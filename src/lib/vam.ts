@@ -48,17 +48,17 @@ export async function searchVAM(q: string): Promise<ArtworkSummary[]> {
     // next: { revalidate: 60 } // enable if calling from server functions
   } as RequestInit);
   if (!res.ok) throw new Error(`VAM search failed: HTTP ${res.status}`);
-  const json = await res.json();
+  const json = (await res.json()) as VAMSearchResponse;
 
-  // TODO: Map the V&A response shape to our ArtworkSummary fields.
-  // Inspect json structure and adjust the property paths below.
-  const items: any[] = Array.isArray(json?.records || json?.data)
-    ? (json.records || json.data)
-    : [];
+  const items: VAMSearchRecord[] = Array.isArray(json.records)
+    ? json.records
+    : Array.isArray(json.data)
+      ? json.data
+      : [];
 
-  return items.map((d: any): ArtworkSummary => {
-    const systemNumber = d.systemNumber ? String(d.systemNumber) : undefined;
-    const id = String(systemNumber || d.id);
+  return items.map((d, index): ArtworkSummary => {
+    const systemNumber = normalizeId(d.systemNumber);
+    const id = normalizeId(systemNumber ?? d.id) ?? `vam-${index}`;
     // Try multiple possible fields for a primary image identifier
     const imageId =
       d._primaryImageId ||
@@ -104,9 +104,10 @@ export async function getVAMDetail(id: string): Promise<ArtworkDetailData> {
   const url = `${VAM_BASE}/objects/${encodeURIComponent(id)}`;
   const res = await fetch(url, { headers: vamHeaders() } as RequestInit);
   if (!res.ok) throw new Error(`VAM detail failed: HTTP ${res.status}`);
-  const json = await res.json();
+  const json = (await res.json()) as VAMDetailResponse;
 
-  const d: any = json?.record || json?.data || json || {};
+  const d: VAMDetailRecord =
+    json.record ?? json.data ?? (json as unknown as VAMDetailRecord);
   const imageId =
     d._primaryImageId ||
     d.primaryImageId ||
@@ -120,14 +121,14 @@ export async function getVAMDetail(id: string): Promise<ArtworkDetailData> {
     d._images?.[0]?.sizes?.large?.src || d._images?.[0]?.url || d.image || undefined;
   const image = VAM_IMAGE(imageId) || (typeof fallback === "string" ? fallback : undefined) || "/placeholder.svg";
 
-  const systemNumber = d.systemNumber ? String(d.systemNumber) : undefined;
+  const systemNumber = normalizeId(d.systemNumber);
   const publicUrl = systemNumber
     ? `https://collections.vam.ac.uk/item/${encodeURIComponent(systemNumber)}`
     : undefined;
 
   return {
     provider: "vam",
-    id: String(systemNumber || d.id),
+    id: normalizeId(systemNumber ?? d.id) ?? id,
     title: d._primaryTitle || d.title || "Untitled",
     artist: d._primaryMaker?.name || d.maker || undefined,
     date: d._primaryDate || d.date_text || undefined,
@@ -141,4 +142,75 @@ export async function getVAMDetail(id: string): Promise<ArtworkDetailData> {
     repository: "Victoria and Albert Museum",
     department: d.department || undefined,
   } as ArtworkDetailData;
+}
+
+type Nullable<T> = T | null | undefined;
+
+type VAMImageRef = {
+  id?: Nullable<string>;
+  asset_id?: Nullable<string>;
+};
+
+type VAMImageVariant = {
+  sizes?: {
+    large?: {
+      src?: Nullable<string>;
+    };
+  };
+  url?: Nullable<string>;
+};
+
+type VAMMaker = {
+  name?: Nullable<string>;
+};
+
+type VAMLinks = {
+  self?: {
+    href?: Nullable<string>;
+  };
+};
+
+type VAMSearchRecord = {
+  id?: Nullable<string | number>;
+  systemNumber?: Nullable<string | number>;
+  _primaryImageId?: Nullable<string>;
+  primaryImageId?: Nullable<string>;
+  primary_image_id?: Nullable<string>;
+  _primaryImage?: Nullable<VAMImageRef>;
+  images?: Nullable<Array<Nullable<VAMImageRef>>>;
+  _images?: Nullable<Array<Nullable<VAMImageVariant>>>;
+  image?: Nullable<string>;
+  _primaryTitle?: Nullable<string>;
+  title?: Nullable<string>;
+  _primaryMaker?: Nullable<VAMMaker>;
+  maker?: Nullable<string>;
+  _primaryDate?: Nullable<string>;
+  date_text?: Nullable<string>;
+  _links?: Nullable<VAMLinks>;
+  link?: Nullable<string>;
+  objectType?: Nullable<string>;
+  category?: Nullable<string>;
+};
+
+type VAMSearchResponse = {
+  records?: Nullable<VAMSearchRecord[]>;
+  data?: Nullable<VAMSearchRecord[]>;
+};
+
+type VAMDetailRecord = VAMSearchRecord & {
+  _summaryDescription?: Nullable<string>;
+  description?: Nullable<string>;
+  creditLine?: Nullable<string>;
+  classification?: Nullable<string>;
+  department?: Nullable<string>;
+};
+
+type VAMDetailResponse = {
+  record?: Nullable<VAMDetailRecord>;
+  data?: Nullable<VAMDetailRecord>;
+};
+
+function normalizeId(input: Nullable<string | number>): string | undefined {
+  if (input === null || input === undefined) return undefined;
+  return String(input);
 }

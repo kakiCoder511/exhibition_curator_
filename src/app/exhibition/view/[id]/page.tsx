@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { ArtworkSummary } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -44,15 +44,7 @@ export default function ExhibitionViewPage() {
   }, [id]);
 
   // Prefetch first item's description when page loads (nice-to-have)
-  useEffect(() => {
-    const first = snapshot?.items?.[0];
-    if (!first) return;
-    void ensureDescription(first);
-  }, [snapshot]);
-
-  const heroImage = useMemo(() => snapshot?.items?.[0]?.image, [snapshot]);
-
-  async function ensureDescription(a: ArtworkSummary) {
+  const ensureDescription = useCallback(async (a: ArtworkSummary) => {
     const key = `${a.provider}:${a.id}`;
     if (descMap[key] !== undefined) return;
     try {
@@ -71,7 +63,15 @@ export default function ExhibitionViewPage() {
     } catch {
       setDescMap((m) => ({ ...m, [key]: undefined }));
     }
-  }
+  }, [descMap]);
+
+  useEffect(() => {
+    const first = snapshot?.items?.[0];
+    if (!first) return;
+    void ensureDescription(first);
+  }, [snapshot, ensureDescription]);
+
+  const heroImage = useMemo(() => snapshot?.items?.[0]?.image, [snapshot]);
 
   if (error) {
     return (
