@@ -29,7 +29,7 @@ export default function ExhibitionViewPage() {
   const [error, setError] = useState("");
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [descMap, setDescMap] = useState<Record<string, string | undefined>>({});
-  const { setAll } = useExhibitionStore();
+  const { loadExhibition } = useExhibitionStore();
 
   useEffect(() => {
     try {
@@ -221,11 +221,11 @@ export default function ExhibitionViewPage() {
           className="bg-white/10 text-white border-white/20 hover:bg-white/20"
           onClick={() => {
             if (!snapshot) return;
-            setAll({
-              title: snapshot.title,
-              curator: snapshot.curator,
-              notes: snapshot.notes,
-              items: snapshot.items,
+            loadExhibition({
+              exhibitionTitle: snapshot.title ?? "",
+              exhibitionCurator: snapshot.curator ?? "",
+              exhibitionNotes: snapshot.notes ?? "",
+              artworks: snapshot.items ?? [],
             });
             router.push("/");
           }}
@@ -238,11 +238,11 @@ export default function ExhibitionViewPage() {
           className="bg-white/10 text-white border-white/20 hover:bg-white/20"
           onClick={() => {
             if (!snapshot) return;
-            setAll({
-              title: snapshot.title,
-              curator: snapshot.curator,
-              notes: snapshot.notes,
-              items: snapshot.items,
+            loadExhibition({
+              exhibitionTitle: snapshot.title ?? "",
+              exhibitionCurator: snapshot.curator ?? "",
+              exhibitionNotes: snapshot.notes ?? "",
+              artworks: snapshot.items ?? [],
             });
             router.push("/exhibition/create");
           }}

@@ -1,13 +1,13 @@
 "use client";
 
 // This page reads selected artworks from a global Zustand store.
-// How items reach this page:
+// How artworks reach this page:
 // 1) On the search/home page, when user clicks "Add" on an artwork,
-//    call `addItem(artwork)` from `useExhibitionStore()`.
-// 2) The store is configured with `persist`, so items survive route changes
+//    call `addArtwork(artwork)` from `useExhibitionStore()`.
+// 2) The store is configured with `persist`, so artworks survive route changes
 //    (stored in localStorage under the key defined in the store middleware).
 // 3) The "Create" button in the mini cart links here: /exhibition/create.
-//    If you see no items here, ensure the home page is adding to the store,
+//    If you see no artworks here, ensure the home page is adding to the store,
 //    not to a local component state.
 
 import { useRouter } from "next/navigation";
@@ -22,21 +22,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 export default function CreateExhibitionPage() {
   const router = useRouter();
   const {
-    title,
-    curator,
-    notes,
-    items,
+    exhibitionTitle: title,
+    exhibitionCurator: curator,
+    exhibitionNotes: notes,
+    artworks,
     setTitle,
     setCurator,
     setNotes,
-    removeItem,
-    clear,
-    moveItem,
-    sortItems,
+    removeArtwork,
+    resetExhibition,
+    moveArtwork,
+    sortArtworks,
   } = useExhibitionStore();
   const [sortValue, setSortValue] = useState("");
 
-  const canSave = title.trim().length > 0 && items.length > 0;
+  const canSave = title.trim().length > 0 && artworks.length > 0;
 
   async function handleSave() {
     // Minimal save flow:
@@ -50,7 +50,7 @@ export default function CreateExhibitionPage() {
       title: title.trim(),
       curator: curator.trim(),
       notes: notes.trim(),
-      items,
+      items: artworks,
       savedAt: new Date().toISOString(),
     };
     const prev =
@@ -59,7 +59,7 @@ export default function CreateExhibitionPage() {
     list.unshift(snapshot);
     localStorage.setItem(key, JSON.stringify(list));
 
-    clear();
+    resetExhibition();
     router.push(`/exhibition/view/${id}`); // Go to the exhibit view page we just created
   }
 
@@ -125,7 +125,7 @@ export default function CreateExhibitionPage() {
           <Card className="bg-white dark:bg-zinc-900">
             <CardHeader className="flex items-center justify-between gap-3">
               <CardTitle className="text-lg">
-                Selected Artworks ({items.length})
+                Selected Artworks ({artworks.length})
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Dialog>
@@ -140,7 +140,7 @@ export default function CreateExhibitionPage() {
                       <DialogClose asChild>
                         <Button
                         variant={sortValue === "title:asc" ? "default" : "outline"}
-                        onClick={() => { setSortValue("title:asc"); sortItems("title","asc"); }}
+                        onClick={() => { setSortValue("title:asc"); sortArtworks("title","asc"); }}
                         >
                           Title A–Z
                         </Button>
@@ -148,7 +148,7 @@ export default function CreateExhibitionPage() {
                       <DialogClose asChild>
                         <Button
                         variant={sortValue === "title:desc" ? "default" : "outline"}
-                        onClick={() => { setSortValue("title:desc"); sortItems("title","desc"); }}
+                        onClick={() => { setSortValue("title:desc"); sortArtworks("title","desc"); }}
                         >
                           Title Z–A
                         </Button>
@@ -156,7 +156,7 @@ export default function CreateExhibitionPage() {
                       <DialogClose asChild>
                         <Button
                         variant={sortValue === "artist:asc" ? "default" : "outline"}
-                        onClick={() => { setSortValue("artist:asc"); sortItems("artist","asc"); }}
+                        onClick={() => { setSortValue("artist:asc"); sortArtworks("artist","asc"); }}
                         >
                           Artist A–Z
                         </Button>
@@ -164,7 +164,7 @@ export default function CreateExhibitionPage() {
                       <DialogClose asChild>
                         <Button
                         variant={sortValue === "artist:desc" ? "default" : "outline"}
-                        onClick={() => { setSortValue("artist:desc"); sortItems("artist","desc"); }}
+                        onClick={() => { setSortValue("artist:desc"); sortArtworks("artist","desc"); }}
                         >
                           Artist Z–A
                         </Button>
@@ -172,7 +172,7 @@ export default function CreateExhibitionPage() {
                       <DialogClose asChild>
                         <Button
                         variant={sortValue === "date:asc" ? "default" : "outline"}
-                        onClick={() => { setSortValue("date:asc"); sortItems("date","asc"); }}
+                        onClick={() => { setSortValue("date:asc"); sortArtworks("date","asc"); }}
                         >
                           Date Asc
                         </Button>
@@ -180,7 +180,7 @@ export default function CreateExhibitionPage() {
                       <DialogClose asChild>
                         <Button
                         variant={sortValue === "date:desc" ? "default" : "outline"}
-                        onClick={() => { setSortValue("date:desc"); sortItems("date","desc"); }}
+                        onClick={() => { setSortValue("date:desc"); sortArtworks("date","desc"); }}
                         >
                           Date Desc
                         </Button>
@@ -194,12 +194,12 @@ export default function CreateExhibitionPage() {
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {items.length === 0 ? (
+              {artworks.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No artworks yet — go back and add some from search.
                 </p>
               ) : (
-                items.map((a) => (
+                artworks.map((a) => (
                   <div key={`${a.provider}:${a.id}`} className="space-y-2">
                     <div className="aspect-[4/3] bg-gray-100 dark:bg-zinc-800 rounded overflow-hidden">
                       <img
@@ -227,7 +227,7 @@ export default function CreateExhibitionPage() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => moveItem(a.id, "up")}
+                        onClick={() => moveArtwork(a.id, "up")}
                         aria-label="Move up"
                       >
                         ↑
@@ -235,7 +235,7 @@ export default function CreateExhibitionPage() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => moveItem(a.id, "down")}
+                        onClick={() => moveArtwork(a.id, "down")}
                         aria-label="Move down"
                       >
                         ↓
@@ -247,7 +247,7 @@ export default function CreateExhibitionPage() {
                         // Currently removes by `id` only. If your providers can
                         // share the same `id`, update the store to remove by
                         // compound key (id + provider) and call it here instead.
-                        onClick={() => removeItem(a.id)}
+                        onClick={() => removeArtwork(a.id)}
                       >
                         Remove
                       </Button>

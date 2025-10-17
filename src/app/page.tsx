@@ -15,7 +15,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { items: cartItems, addItem, removeItem, clear } = useExhibitionStore();
+  const {
+    artworks: cartArtworks,
+    addArtwork,
+    removeArtwork,
+    resetExhibition,
+  } = useExhibitionStore();
 
   async function handleSearch(query: string) {
     setLoading(true);
@@ -35,16 +40,16 @@ export default function Home() {
   }
 
   function handleAdd(a: ArtworkSummary) {
-    addItem(a);
+    addArtwork(a);
   }
 
   function handleRemove(a: ArtworkSummary) {
-    removeItem(a.id);
+    removeArtwork(a.id);
   }
 
   function handleClear() {
-    if (cartItems.length === 0) return;
-    clear();
+    if (cartArtworks.length === 0) return;
+    resetExhibition();
   }
 
   return (
@@ -61,7 +66,7 @@ export default function Home() {
 
       <main className="max-w-5xl mx-auto space-y-6">
         <MiniExhibitionCart
-          items={cartItems}
+          artworks={cartArtworks}
           onRemove={handleRemove}
           onClear={handleClear}
         />
