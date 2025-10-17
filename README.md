@@ -77,3 +77,7 @@ public/         # Static assets and placeholders
 ### ⚙️ Technical Enhancements
 - ✅ Added **loading skeletons & error handling**
 - Add **unit tests** for store logic & API clients
+
+--- 
+
+🧪 Tests planned but not required for MVP scope. Core logic verified manually.
