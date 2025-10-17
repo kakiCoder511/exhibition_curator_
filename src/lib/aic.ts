@@ -31,7 +31,7 @@ function buildAICHydrateUrl(ids: string[], fields: string[]) {
 
 // Construct IIIF image URL from image_id.
 
-const AIC_IMAGE = (imageId?: string) =>
+const AIC_IMAGE = (imageId?: string | null) =>
   imageId
     ? `https://www.artic.edu/iiif/2/${imageId}/full/843,/0/default.jpg`
     : undefined;
