@@ -39,12 +39,18 @@ const AIC_IMAGE = (imageId?: string | null) =>
 /**
  * Map AIC classification_title to our Category type.
  */
-const mapClassificationToCategory = (c?: string): Category | undefined => {
-  if (!c) return undefined;
-  const s = c.toLowerCase();
-  if (s.includes("painting")) return "painting";
-  if (s.includes("photograph")) return "photography";
-  if (s.includes("ceramic") || s.includes("decorative")) return "decorative";
+const mapClassificationToCategory = (
+  classificationTitle?: string | null
+): Category | undefined => {
+  if (!classificationTitle) return undefined;
+  const normalized = classificationTitle.toLowerCase();
+  if (normalized.includes("painting")) return "painting";
+  if (normalized.includes("photograph")) return "photography";
+  if (
+    normalized.includes("ceramic") ||
+    normalized.includes("decorative")
+  )
+    return "decorative";
   return undefined;
 };
 

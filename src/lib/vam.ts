@@ -22,12 +22,19 @@ function vamHeaders() {
   return headers;
 }
 
-const mapClassificationToCategory = (c?: string): Category | undefined => {
-  if (!c) return undefined;
-  const s = c.toLowerCase();
-  if (s.includes("painting")) return "painting";
-  if (s.includes("photograph")) return "photography";
-  if (s.includes("ceramic") || s.includes("decorative")) return "decorative";
+const mapClassificationToCategory = (
+  classification?: string | null
+): Category | undefined => {
+  if (!classification) return undefined;
+  const normalized = classification.toLowerCase();
+  if (normalized.includes("painting")) return "painting";
+  if (normalized.includes("photograph")) return "photography";
+  if (
+    normalized.includes("ceramic") ||
+    normalized.includes("decorative") ||
+    normalized.includes("glass")
+  )
+    return "decorative";
   return undefined;
 };
 
