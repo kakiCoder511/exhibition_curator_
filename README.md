@@ -1,6 +1,10 @@
 # 🎨 Exhibition Curator (Next.js + TypeScript)
-
 A virtual exhibition builder that allows users to **search artworks from multiple museum collections**, curate their own mini exhibitions, and save snapshots — all in the browser.
+
+---
+## 🌐 Deployment
+Hosted on **Vercel** — auto-deployed from the `main` branch.  
+🔗 [https://exhibition-curator-gamma.vercel.app](https://exhibition-curator-gamma.vercel.app)
 
 ---
 
