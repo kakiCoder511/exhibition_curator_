@@ -21,6 +21,8 @@ Then visit http://localhost:3000 (or the port shown in your terminal)**
 
 ##  Features
 
+- Artwork of the Day: 
+   - A dynamic hero section that highlights a random artwork from AIC the API each time the pageoads giving users daily inspiration.
 -  Search artworks from **AIC**, **V&A**, and **The Met** collections  
 -  Add artworks to a **mini exhibition cart**  
 -  Save and view **exhibition snapshots** directly in the browser  
