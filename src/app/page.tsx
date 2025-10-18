@@ -11,6 +11,7 @@ import { useExhibitionStore } from "@/store/exhibition";
 import Link from "next/link";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const [results, setResults] = useState<ArtworkSummary[]>([]);
@@ -84,12 +85,19 @@ export default function Home() {
       <Button
         type="button"
         size="lg"
-        className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg px-5 flex items-center gap-2"
+        className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg px-5 flex items-center gap-3"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         aria-label="Back to top"
       >
         <ArrowUp className="size-4" />
         To top
+        <Badge
+          variant="secondary"
+          className="rounded-full text-xs px-2 py-0.5"
+          aria-label={`Mini exhibition has ${cartArtworks.length} artworks`}
+        >
+          {cartArtworks.length}
+        </Badge>
       </Button>
     </div>
   );
