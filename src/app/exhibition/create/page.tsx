@@ -77,11 +77,6 @@ export default function CreateExhibitionPage() {
               Name your exhibition and review selected artworks.
             </p>
           </div>
-          <div className="space-x-2">
-            <Button disabled={!canSave} onClick={handleSave}>
-              Curate & Save
-            </Button>
-          </div>
         </header>
 
         {/* Form */}
@@ -116,6 +111,11 @@ export default function CreateExhibitionPage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
+            </div>
+            <div className="flex justify-end pt-2">
+              <Button disabled={!canSave} onClick={handleSave}>
+                Curate & Save
+              </Button>
             </div>
           </CardContent>
         </Card>
