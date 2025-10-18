@@ -121,16 +121,19 @@ export default function ExhibitionViewPage() {
         </div>
       </section>
 
-      {/* Fullscreen slides for artworks */}
-      <main className="snap-y snap-mandatory h-[calc(100vh-0px)] overflow-y-auto">
+      {/* Artwork sections */}
+      <main className="px-2 md:px-6 py-8 space-y-10">
         {snapshot.items.map((a, idx) => {
           const key = `${a.provider}:${a.id}`;
           const isOpen = openIdx === idx;
           const desc = descMap[key];
           return (
-            <section key={key} className="w-full snap-start">
-              {/* Image area: consistent spacing, image bottom aligns to card */}
-              <div className="relative w-full bg-black flex items-end justify-center pt-2 md:pt-4 pb-2 md:pb-3 min-h-[60vh] md:min-h-[70vh]">
+            <section
+              key={key}
+              className="space-y-4 border-b border-white/10 pb-10 last:border-b-0 last:pb-0"
+            >
+              {/* Image area */}
+              <div className="relative w-full bg-black flex items-center justify-center rounded-lg overflow-hidden min-h-[50vh] md:min-h-[60vh]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={a.image ?? "/placeholder.svg"}
@@ -140,9 +143,9 @@ export default function ExhibitionViewPage() {
                 />
               </div>
 
-              {/* Separate info card below the artwork (not overlayed) */}
-              <div className="pb-4 px-2 md:px-6 bg-black">
-                <div className="mx-auto max-w-4xl bg-white text-black rounded-lg p-3 md:p-4 shadow border border-black/10">
+              {/* Info card */}
+              <div className="mx-auto max-w-4xl">
+                <div className="bg-white text-black rounded-lg p-4 md:p-5 shadow border border-black/10 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="text-xl md:text-2xl font-semibold truncate">
