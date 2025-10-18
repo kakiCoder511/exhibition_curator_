@@ -34,7 +34,7 @@ export default function MiniExhibitionCart({
       {/* ---------- Header ---------- */}
       <CardHeader className="flex-row items-center justify-between gap-3">
         <CardTitle className="text-base font-semibold flex items-center gap-1">
-          My Curation
+          My Curation Broad
           {hasArtworks && (
             <span className="text-gray-600 dark:text-zinc-400 text-sm font-normal">
               ({artworks.length}{" "}

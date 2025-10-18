@@ -29,7 +29,7 @@ export default function SearchBar({ onSearch }: { onSearch: (query: string) => v
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 w-full max-w-xl mx-auto p-4" role="search" aria-label="Artwork search">
+    <form onSubmit={handleSubmit} className="flex gap-2 w-full  pr-4 py-4" role="search" aria-label="Artwork search">
       <Input
         ref={inputRef}
         type="text"
