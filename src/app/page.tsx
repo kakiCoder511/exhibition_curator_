@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ArtworkSummary } from "@/lib/types";
 import { searchAIC } from "@/lib/aic";
 import { searchVAM } from "@/lib/vam";
@@ -72,6 +72,15 @@ export default function Home() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollButton(window.scrollY > 240);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   const filteredCartArtworks = useMemo(
     () => cartArtworks.filter((art) => hasUsableImage(art.image)),
     [cartArtworks]
@@ -79,17 +88,24 @@ export default function Home() {
   const heroBackground = hasUsableImage(featuredArtwork.image)
     ? featuredArtwork.image
     : undefined;
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const curationSectionRef = useRef<HTMLDivElement | null>(null);
 
   async function handleSearch(query: string) {
     setLoading(true);
     setError("");
     try {
+      curationSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
       const [aic, vam, met] = await Promise.all([
         searchAIC(query),
         searchVAM(query).catch(() => [] as ArtworkSummary[]),
         searchMet(query).catch(() => [] as ArtworkSummary[]),
       ]);
-      setResults([...aic, ...vam, ...met]);
+      const combinedResults = [...aic, ...vam, ...met];
+      setResults(combinedResults);
     } catch {
       setError("Failed to fetch artworks.");
     } finally {
@@ -109,6 +125,15 @@ export default function Home() {
     if (cartArtworks.length === 0) return;
     resetExhibition();
   }
+
+  useEffect(() => {
+    if (!loading && results.length > 0) {
+      curationSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [loading, results]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -168,35 +193,44 @@ export default function Home() {
       </section>
 
       <main className="max-w-5xl mx-auto space-y-6 px-6 py-10">
-        <MiniExhibitionCart
-          artworks={filteredCartArtworks}
-          onRemove={handleRemove}
-          onClear={handleClear}
-        />
-        <ResultGrid
-          artworks={results}
-          onAdd={handleAdd}
-          loading={loading}
-          error={error}
-        />
+        <div ref={curationSectionRef} className="space-y-6">
+          <MiniExhibitionCart
+            artworks={filteredCartArtworks}
+            onRemove={handleRemove}
+            onClear={handleClear}
+          />
+          <ResultGrid
+            artworks={results}
+            onAdd={handleAdd}
+            loading={loading}
+            error={error}
+          />
+        </div>
       </main>
-      <Button
-        type="button"
-        size="lg"
-        className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg px-5 flex items-center gap-3"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        aria-label="Back to top"
-      >
-        <ArrowUp className="size-4" />
-        To top
-        <Badge
-          variant="secondary"
-          className="rounded-full text-xs px-2 py-0.5"
-          aria-label={`Mini exhibition has ${filteredCartArtworks.length} artworks`}
+      {showScrollButton && (
+        <Button
+          type="button"
+          size="lg"
+          className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg px-5 flex items-center gap-3"
+          onClick={() =>
+            curationSectionRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            })
+          }
+          aria-label="Jump to curator cart"
         >
-          {filteredCartArtworks.length}
-        </Badge>
-      </Button>
+          <ArrowUp className="size-4" />
+          Curator cart
+          <Badge
+            variant="secondary"
+            className="rounded-full text-xs px-2 py-0.5"
+            aria-label={`Mini exhibition has ${filteredCartArtworks.length} artworks`}
+          >
+            {filteredCartArtworks.length}
+          </Badge>
+        </Button>
+      )}
     </div>
   );
 }
