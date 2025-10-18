@@ -11,12 +11,12 @@
 //    not to a local component state.
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useExhibitionStore } from "@/store/exhibition";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { providerMeta } from "@/lib/utils";
+import { hasUsableImage, providerMeta } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 
 export default function CreateExhibitionPage() {
@@ -34,9 +34,13 @@ export default function CreateExhibitionPage() {
     moveArtwork,
     sortArtworks,
   } = useExhibitionStore();
+  const filteredArtworks = useMemo(
+    () => artworks.filter((artwork) => hasUsableImage(artwork.image)),
+    [artworks]
+  );
   const [sortValue, setSortValue] = useState("");
 
-  const canSave = title.trim().length > 0 && artworks.length > 0;
+  const canSave = title.trim().length > 0 && filteredArtworks.length > 0;
 
   async function handleSave() {
     // Minimal save flow:
@@ -50,7 +54,7 @@ export default function CreateExhibitionPage() {
       title: title.trim(),
       curator: curator.trim(),
       notes: notes.trim(),
-      items: artworks,
+      items: filteredArtworks,
       savedAt: new Date().toISOString(),
     };
     const prev =
@@ -125,7 +129,7 @@ export default function CreateExhibitionPage() {
           <Card className="bg-white dark:bg-zinc-900">
             <CardHeader className="flex items-center justify-between gap-3">
               <CardTitle className="text-lg">
-                Selected Artworks ({artworks.length})
+                Selected Artworks ({filteredArtworks.length})
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Dialog>
@@ -194,12 +198,12 @@ export default function CreateExhibitionPage() {
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {artworks.length === 0 ? (
+              {filteredArtworks.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No artworks yet — go back and add some from search.
                 </p>
               ) : (
-                artworks.map((a) => (
+                filteredArtworks.map((a) => (
                   <div key={`${a.provider}:${a.id}`} className="space-y-2">
                     <div className="aspect-[4/3] bg-gray-100 dark:bg-zinc-800 rounded overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}

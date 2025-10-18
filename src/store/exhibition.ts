@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { ArtworkSummary } from "@/lib/types";
+import { hasUsableImage } from "@/lib/utils";
 
 type ExhibitionState = {
   exhibitionTitle: string;
@@ -38,25 +39,35 @@ export const useExhibitionStore = create<ExhibitionState>()(
       artworks: [],
 
       loadExhibition: ({ exhibitionTitle, exhibitionCurator, exhibitionNotes, artworks }) =>
-        set({ exhibitionTitle, exhibitionCurator, exhibitionNotes, artworks }),
+        set({
+          exhibitionTitle,
+          exhibitionCurator,
+          exhibitionNotes,
+          artworks: artworks.filter((artwork) => hasUsableImage(artwork.image)),
+        }),
 
       setTitle: (title) => set({ exhibitionTitle: title }),
       setCurator: (curator) => set({ exhibitionCurator: curator }),
       setNotes: (notes) => set({ exhibitionNotes: notes }),
 
       addArtwork: (artwork) => {
-        const exists = get().artworks.some(
+        if (!hasUsableImage(artwork.image)) return;
+        const existing = get().artworks.filter((item) => hasUsableImage(item.image));
+        const exists = existing.some(
           (x) => x.id === artwork.id && x.provider === artwork.provider
         );
-        if (!exists) set({ artworks: [artwork, ...get().artworks] });
+        if (!exists) set({ artworks: [artwork, ...existing] });
       },
 
-      removeArtwork: (id) => set({
-        artworks: get().artworks.filter((x) => x.id !== id),
-      }),
+      removeArtwork: (id) =>
+        set({
+          artworks: get()
+            .artworks.filter((item) => hasUsableImage(item.image))
+            .filter((x) => x.id !== id),
+        }),
 
       moveArtwork: (id, direction) => {
-        const artworks = [...get().artworks];
+        const artworks = [...get().artworks.filter((item) => hasUsableImage(item.image))];
         const index = artworks.findIndex((x) => x.id === id);
         if (index === -1) return;
         if (direction === "up" && index > 0) {
@@ -68,7 +79,7 @@ export const useExhibitionStore = create<ExhibitionState>()(
       },
 
       sortArtworks: (by, direction) => {
-        const artworks = [...get().artworks];
+        const artworks = [...get().artworks.filter((item) => hasUsableImage(item.image))];
         const dir = direction === "asc" ? 1 : -1;
         artworks.sort((a, b) => {
           const va = (a[by] ?? "").toString().toLowerCase();

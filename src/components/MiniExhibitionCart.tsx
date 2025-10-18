@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import { useMemo } from "react";
 import type { ArtworkSummary } from "@/lib/types";
 import Link from "next/link";
 import {
@@ -10,6 +11,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { hasUsableImage } from "@/lib/utils";
 
 /**
  * MiniExhibitionCart
@@ -27,7 +29,11 @@ export default function MiniExhibitionCart({
   onRemove,
   onClear,
 }: MiniExhibitionCartProps) {
-  const hasArtworks = artworks.length > 0;
+  const visibleArtworks = useMemo(
+    () => artworks.filter((artwork) => hasUsableImage(artwork.image)),
+    [artworks]
+  );
+  const hasArtworks = visibleArtworks.length > 0;
 
   return (
     <Card className="shadow-lg bg-white dark:bg-zinc-900 border rounded-2xl">
@@ -56,11 +62,11 @@ export default function MiniExhibitionCart({
 
       {/* ---------- Content ---------- */}
       <CardContent className="max-h-64 overflow-y-auto space-y-3">
-        {hasArtworks ? (
-          <ul className="space-y-2">
-            {artworks.map((artwork) => (
-              <li
-                key={`${artwork.provider}:${artwork.id}`}
+          {hasArtworks ? (
+            <ul className="space-y-2">
+              {visibleArtworks.map((artwork) => (
+                <li
+                  key={`${artwork.provider}:${artwork.id}`}
                 className="flex items-center justify-between gap-3 text-sm border-b border-gray-200 dark:border-zinc-700 pb-2"
               >
                 {/* Thumbnail */}
@@ -115,7 +121,7 @@ export default function MiniExhibitionCart({
         {hasArtworks ? (
           <>
             <span>
-              {artworks.length} artwork{artworks.length > 1 ? "s" : ""} ready
+              {visibleArtworks.length} artwork{visibleArtworks.length > 1 ? "s" : ""} ready
             </span>
             {/* ✅ NEW: Create button linking to Exhibition page */}
             <Link href="/exhibition/create">

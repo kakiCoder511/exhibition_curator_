@@ -6,6 +6,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function hasUsableImage(image?: string | null): image is string {
+  if (!image) return false
+  const normalised = image.toLowerCase()
+  if (normalised.includes("placeholder.svg")) return false
+  if (normalised.startsWith("data:image/svg")) return false
+  return true
+}
+
 export function providerMeta(provider: ProviderKey): { name: string; termsUrl?: string } {
   switch (provider) {
     case "aic":

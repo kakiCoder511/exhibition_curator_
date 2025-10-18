@@ -1,5 +1,6 @@
 import ArtworkCard from "@/components/ArtworkCard";
 import type { ArtworkSummary } from "@/lib/types";
+import { hasUsableImage } from "@/lib/utils";
 
 export default function ResultGrid({
   artworks,
@@ -22,10 +23,7 @@ export default function ResultGrid({
     );
   }
   if (error) return <p className="text-center mt-6 text-red-500">{error}</p>;
-  const visibleArtworks = artworks.filter(
-    (art) =>
-      art.image && !art.image.toLowerCase().includes("placeholder.svg")
-  );
+  const visibleArtworks = artworks.filter((art) => hasUsableImage(art.image));
 
   if (visibleArtworks.length === 0)
     return <p className="text-center text-gray-400 mt-6">No artworks found.</p>;

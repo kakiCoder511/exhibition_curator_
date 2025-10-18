@@ -10,7 +10,7 @@ import { getMetDetail } from "@/lib/met";
 import { getVAMDetail } from "@/lib/vam";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useExhibitionStore } from "@/store/exhibition";
-import { providerMeta } from "@/lib/utils";
+import { hasUsableImage, providerMeta } from "@/lib/utils";
 
 type Snapshot = {
   id: string;
@@ -65,13 +65,25 @@ export default function ExhibitionViewPage() {
     }
   }, [descMap]);
 
+  const filteredItems = useMemo(
+    () => (snapshot?.items ?? []).filter((item) => hasUsableImage(item.image)),
+    [snapshot?.items]
+  );
+  const heroImage = useMemo(
+    () => filteredItems[0]?.image ?? snapshot?.items?.[0]?.image,
+    [filteredItems, snapshot?.items]
+  );
+  const [heroBroken, setHeroBroken] = useState(false);
+
   useEffect(() => {
-    const first = snapshot?.items?.[0];
+    const first = filteredItems[0];
     if (!first) return;
     void ensureDescription(first);
-  }, [snapshot, ensureDescription]);
+  }, [filteredItems, ensureDescription]);
 
-  const heroImage = useMemo(() => snapshot?.items?.[0]?.image, [snapshot]);
+  useEffect(() => {
+    setHeroBroken(false);
+  }, [heroImage]);
 
   if (error) {
     return (
@@ -88,17 +100,42 @@ export default function ExhibitionViewPage() {
 
   if (!snapshot) return null;
 
+  if (filteredItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <p className="text-white/70">
+          This exhibition does not include artworks with available images.
+        </p>
+        <Button
+          variant="outline"
+          className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+          onClick={() => {
+            loadExhibition({
+              exhibitionTitle: snapshot.title ?? "",
+              exhibitionCurator: snapshot.curator ?? "",
+              exhibitionNotes: snapshot.notes ?? "",
+              artworks: snapshot.items ?? [],
+            });
+            router.push("/exhibition/create");
+          }}
+        >
+          Edit exhibition
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero section with first artwork as background */}
       <section className="relative h-[70vh] w-full overflow-hidden">
-        {heroImage ? (
+        {heroImage && !heroBroken ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={heroImage}
-            alt={snapshot.title}
-            className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/placeholder.svg")}
+            alt={snapshot.title ?? "Exhibition hero artwork"}
+            className="absolute inset-0 w-full h-full object-cover select-none"
+            onError={() => setHeroBroken(true)}
           />
         ) : (
           <div className="absolute inset-0 bg-zinc-900" />
@@ -123,7 +160,7 @@ export default function ExhibitionViewPage() {
 
       {/* Artwork sections */}
       <main className="px-2 md:px-6 py-8 space-y-10">
-        {snapshot.items.map((a, idx) => {
+        {filteredItems.map((a, idx) => {
           const key = `${a.provider}:${a.id}`;
           const isOpen = openIdx === idx;
           const desc = descMap[key];
